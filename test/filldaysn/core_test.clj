@@ -1,8 +1,19 @@
-(ns filldays.core-test
+(ns filldaysn.core-test
   (:require [clojure.test :refer :all]
-            [filldaysn.core :refer :all]
-            [filldaysn.time-utils :refer :all]
+            [filldaysn.core :refer [next-day]]
+            [filldaysn.convert-utils :as conv]
             [clj-time.core :as t]))
+
+(testing "next-day"
+  (deftest should-return-empty-list-when-empty-parameter
+    (testing "should return empty list when empty parameter"
+      (is (empty? (next-day '())))))
+
+  (deftest should-return-available-date
+    (testing "should return avaiable date"
+      (is (=
+           (list {:date "2017-05-17T00:00:00Z", :available true})
+           (conv/enhancedDates-strings (take 1 (next-day (list (conv/string-date "2017-5-17T00:00:00Z"))))))))))
 
 ;; (testing "ifilld"
 ;;   (deftest should-return-no-date-when-equals
