@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [filldaysn.core :refer [next-day]]
             [filldaysn.convert-utils :as conv]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [clojure.spec.test.alpha :as stest]))
 
 (testing "next-day"
   (deftest should-return-empty-list-when-empty-parameter
@@ -37,4 +38,12 @@
                 (list
                  (conv/string-date "2017-05-17T00:00:00Z")
                  (conv/string-date "2017-05-19T00:00:00Z")
-                 (conv/string-date "2017-05-22T00:00:00Z"))))))))))
+                 (conv/string-date "2017-05-22T00:00:00Z")))))))))
+
+    (deftest should-test-next-day
+      (testing "should test next day"
+        (is (let [result (stest/summarize-results (stest/check `next-day))
+                  total (:total result)
+                  passed (:check-passed result)]
+              (and (= total passed)
+                   (not (zero? total))))))))

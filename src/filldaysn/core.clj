@@ -27,17 +27,11 @@
        (cons (unavailable day)
              (next-day-lazy nextDay allDays))))))
 
-(s/def ::dates-seq (s/coll-of #(instance? org.joda.time.DateTime %) :distinct true))
-(s/def ::enhanced-date (s/keys :req-un [::date ::available]))
-(s/def ::enhanced-dates-seq (s/every ::enhanced-date))
-
 (defn next-day
   [[firstDay & _ :as all]]
-  {:pre [(s/valid? ::dates-seq all)]
-   :post [(s/valid? ::enhanced-dates-seq %)]}
-  (if (nil? firstDay)
-    (empty all)
-    (next-day-lazy firstDay all)))
+   (if (nil? firstDay)
+     (empty all)
+     (next-day-lazy firstDay all)))
 
 (defn -main
   [n & dates]
@@ -51,3 +45,26 @@
           (take num)
           conv/enhancedDates-strings
           prn))))
+
+;; Clojure spec
+(s/def ::date #(instance? org.joda.time.DateTime %))
+(s/def ::dates-seq (s/coll-of ::date :distinct true))
+(s/def ::available boolean?)
+(s/def ::enhanced-date (s/keys :req-un  [::date ::available]))
+(s/def ::enhanced-dates-seq (s/every ::enhanced-date))
+
+(defn semantically-valid-enhanced-dates-seq
+  "Testing predicate - Returns true when all the returned available dates are in the arguments and the non-available are new"
+  [{args :args ret :ret}]
+  (and (= args
+          (map :date
+               (filter #(:available %) ret))) ;; This might throw
+                                              ;; stack overflow for is working on a lazy infinite seq
+       (distinct? args
+                  (map :date
+                       (filter #(not (:available %)) ret))))) ;; lazy seq
+
+(s/fdef next-day
+        :args ::dates-seq
+        :ret ::enhanced-dates-seq
+        :fn semantically-valid-enhanced-dates-seq)
